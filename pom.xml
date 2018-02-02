@@ -6,7 +6,7 @@
     <version>1.0-SNAPSHOT</version>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <scala.version>2.9.2</scala.version>
+        <scala.version>2.11.9</scala.version>
     </properties>
 
     <repositories>
@@ -29,6 +29,12 @@
         <dependency>
             <groupId>org.scala-lang</groupId>
             <artifactId>scala-library</artifactId>
+            <version>${scala.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.scala-lang</groupId>
+            <artifactId>scala-actors</artifactId>
             <version>${scala.version}</version>
         </dependency>
     </dependencies>
@@ -66,18 +72,9 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>exec-maven-plugin</artifactId>
-                <version>1.2.1</version>
+                <version>1.6.0</version>
                 <configuration>
                     <mainClass>mx.avc.scalabench.App</mainClass>
-                    <arguments>
-                        <argument>-Xms256m</argument>
-                        <argument>-Xmx512m</argument>
-                        <argument>-server</argument>
-                        <argument>-classpath</argument>
-                        <classpath/>
-                        <argument>-Dcom.sun.management.jmxremote</argument>
-                        <argument>mx.avc.scalabench.App</argument>
-                    </arguments>
                 </configuration>
             </plugin>
         </plugins>
