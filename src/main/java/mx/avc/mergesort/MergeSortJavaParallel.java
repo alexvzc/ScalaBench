@@ -5,13 +5,14 @@
 
 package mx.avc.mergesort;
 
+import static java.lang.Runtime.getRuntime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import static java.util.concurrent.Executors.newFixedThreadPool;
 import java.util.concurrent.Future;
+import static mx.avc.mergesort.MergeSortJava.copyArrayRegion;
 
 /**
  *
@@ -29,14 +30,17 @@ public class MergeSortJavaParallel {
     }
 
     private static class Holder {
-        private static final MergeSortJavaParallel instance = new MergeSortJavaParallel();
+        private static final MergeSortJavaParallel INSTANCE =
+                new MergeSortJavaParallel();
     }
 
     public static MergeSortJavaParallel getInstance() {
-        return Holder.instance;
+        return Holder.INSTANCE;
     }
 
-    public ExecutorService executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() * 2);
+    public static final int MAX_JOBS = getRuntime().availableProcessors() * 2;
+
+    public final ExecutorService EXECUTOR = newFixedThreadPool(MAX_JOBS);
 
     public static int[] mergeSort(int[] array) {
         int[] result = new int[array.length];
@@ -45,47 +49,42 @@ public class MergeSortJavaParallel {
     }
 
     public static int[] mergeSort(int[] array, int[] my_array, int[] scratch) {
-        MergeSortJava.copyArrayRegion(array, my_array, 0, array.length, 0);
+        copyArrayRegion(array, my_array, 0, array.length, 0);
         mergeSort(my_array, 0, my_array.length, scratch);
         return my_array;
     }
 
-    public static void mergeSort(final int[] array, final int start, final int length, final int[] scratch) {
-        ExecutorService executor = getInstance().executor;
-        List<Future<ArrayRegion>> futures = new ArrayList<Future<ArrayRegion>>();
-        int maxJobs = Runtime.getRuntime().availableProcessors() * 2;
-        int size = (length + maxJobs - 1) / maxJobs;
+    public static void mergeSort(int[] array, int start, int length,
+            int[] scratch) {
+        ExecutorService executor = getInstance().EXECUTOR;
+        List<Future<ArrayRegion>> futures = new ArrayList<>();
+        int size = (length + MAX_JOBS - 1) / MAX_JOBS;
 
         int i = 0;
         do {
-            final int my_start = i;
-            final int my_size = size > (array.length - my_start) ? 
+            int my_start = i;
+            int my_size = size > (array.length - my_start) ?
                     (array.length - my_start) : size;
-            futures.add(executor.submit(new Callable<ArrayRegion>() {
-                public ArrayRegion call() throws Exception {
-                    MergeSortJava.mergeSort(array, my_start, my_size, scratch);
-                    return new ArrayRegion(my_start, my_size);
-                }
+            futures.add(executor.submit(() -> {
+                MergeSortJava.mergeSort(array, my_start, my_size, scratch);
+                return new ArrayRegion(my_start, my_size);
             }));
             i = my_start + my_size;
         } while(i < length);
 
         while(futures.size() > 1) {
-            List<Future<ArrayRegion>> new_futures = new ArrayList<Future<ArrayRegion>>();
+            List<Future<ArrayRegion>> new_futures = new ArrayList<>();
             for(int j = 0; j < futures.size(); j += 2) {
                 if((j+1) < futures.size()) {
-                    final Future<ArrayRegion> f = futures.get(j);
-                    final Future<ArrayRegion> g = futures.get(j+1);
+                    Future<ArrayRegion> f = futures.get(j);
+                    Future<ArrayRegion> g = futures.get(j+1);
 
-                    new_futures.add(executor.submit(new Callable<ArrayRegion>() {
-
-                        public ArrayRegion call() throws Exception {
-                            ArrayRegion a = f.get();
-                            ArrayRegion b = g.get();
-                            MergeSortJava.mergeLists(array, a.start, a.length,
-                                    b.length, scratch);
-                            return new ArrayRegion(a.start, a.length + b.length);
-                        }
+                    new_futures.add(executor.submit(() -> {
+                        ArrayRegion a = f.get();
+                        ArrayRegion b = g.get();
+                        MergeSortJava.mergeLists(array, a.start, a.length,
+                                b.length, scratch);
+                        return new ArrayRegion(a.start, a.length + b.length);
                     }));
                 } else {
                     new_futures.add(futures.get(j));
@@ -96,10 +95,8 @@ public class MergeSortJavaParallel {
 
         try {
             futures.get(0).get();
-        } catch(InterruptedException ie) {
+        } catch(InterruptedException | ExecutionException ie) {
             throw new RuntimeException(ie);
-        } catch(ExecutionException ee) {
-            throw new RuntimeException(ee);
         }
     }
 }

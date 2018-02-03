@@ -8,7 +8,8 @@ package mx.avc.mergesort
 object MergeSort extends MergeSortBase {
 
     override
-    def mergeSort(array : Array[Int], start : Int, length : Int, scratch : Array[Int]) : Unit = {
+    def mergeSort(array : Array[Int], start : Int, length : Int,
+            scratch : Array[Int]) : Unit = {
         if(length < 2) array
         else {
             val length_a = length / 2

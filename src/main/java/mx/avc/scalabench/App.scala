@@ -10,16 +10,8 @@ object App {
     import mx.avc.mergesort.MergeSortJava
     import mx.avc.mergesort.MergeSortJavaParallel
     import mx.avc.mergesort.MergeSortParallel
-    /*import mx.avc.wordfinder.WordFinder
-    import mx.avc.wordfinder.WordFinderParallel
-    import mx.avc.wordfinder.WordFinderParallel2
-    import mx.avc.wordfinder.WordFinderScala*/
     import scala.actors.Scheduler
     import scala.util.Random
-
-    /*val DICTIONARY = Set("a", "ab", "ba", "aba", "bab")
-
-    val TEST_PATTERN = "ababababababbababaabbabababaababababaabbaba";*/
 
     val WARMUP_ITERATIONS = 100
 
@@ -117,9 +109,6 @@ object App {
 
     def main(args : Array[String]):Unit = {
         val random = Random
-        /*val JAVA_DICTIONARY : java.util.Set[String] = DICTIONARY
-        val JAVA_EXPECTED = WordFinder.findWords(TEST_PATTERN, JAVA_DICTIONARY)
-        val EXPECTED : Set[Set[String]] = JAVA_EXPECTED*/
         val INITIAL_LIST = generateArray(random.nextInt)(1000000)
         val EXPECTED_LIST = sortArray(INITIAL_LIST)
 
@@ -130,12 +119,8 @@ object App {
         val array_copy = new Array[Int](INITIAL_LIST.length);
         val scratch = new Array[Int](INITIAL_LIST.length);
 
-        iterative_benchmark(/*JAVA_EXPECTED, EXPECTED, EXPECTED, EXPECTED,*/ EXPECTED_LIST, EXPECTED_LIST, EXPECTED_LIST, EXPECTED_LIST)(WARMUP_ITERATIONS) {
-            (/*WordFinder.findWords(TEST_PATTERN, JAVA_DICTIONARY),
-             WordFinderScala.findWords(TEST_PATTERN, DICTIONARY),
-             WordFinderParallel2.findWords(TEST_PATTERN, DICTIONARY),
-             WordFinderParallel.findWords(TEST_PATTERN, DICTIONARY),*/
-             MergeSortJava.mergeSort(INITIAL_LIST, array_copy, scratch),
+        iterative_benchmark(EXPECTED_LIST, EXPECTED_LIST, EXPECTED_LIST, EXPECTED_LIST)(WARMUP_ITERATIONS) {
+            (MergeSortJava.mergeSort(INITIAL_LIST, array_copy, scratch),
              MergeSortJavaParallel.mergeSort(INITIAL_LIST, array_copy, scratch),
              MergeSort.mergeSort(INITIAL_LIST, array_copy, scratch),
              MergeSortParallel.mergeSort(INITIAL_LIST, array_copy, scratch))
@@ -143,23 +128,7 @@ object App {
 
         println(" complete!")
         println("Starting tests")
-/*
-        batteryBench("WordFinder Java non-parallelized")(JAVA_EXPECTED) {
-            WordFinder.findWords(TEST_PATTERN, JAVA_DICTIONARY)
-        }
 
-        batteryBench("WordFinder Scala non-parallelized")(EXPECTED) {
-            WordFinderScala.findWords(TEST_PATTERN, DICTIONARY)
-        }
-
-        batteryBench("WordFinder Scala parallelized-synced-var")(EXPECTED) {
-            WordFinderParallel2.findWords(TEST_PATTERN, DICTIONARY)
-        }
-
-        batteryBench("WordFinder Scala parallelized-msg-only")(EXPECTED) {
-            WordFinderParallel.findWords(TEST_PATTERN, DICTIONARY)
-        }
-*/
         batteryBench("MergeSort Java non-parallelized")(EXPECTED_LIST) {
             MergeSortJava.mergeSort(INITIAL_LIST, array_copy, scratch)
         }
@@ -176,7 +145,7 @@ object App {
             MergeSortParallel.mergeSort(INITIAL_LIST, array_copy, scratch)
         }
 
-        MergeSortJavaParallel.getInstance.executor.shutdown
+        MergeSortJavaParallel.getInstance.EXECUTOR.shutdown
         Scheduler.shutdown
     }
 }

@@ -5,20 +5,25 @@
 
 package mx.avc.mergesort;
 
+import static java.lang.Math.max;
+import static java.lang.System.arraycopy;
+
 /**
  *
  * @author alexv
  */
 public class MergeSortJava {
 
-    protected static int copyArrayRegion(int[] source, int[] dest, int index_a, int length, int index_r) {
+    protected static int copyArrayRegion(int[] source, int[] dest, int index_a,
+            int length, int index_r) {
         while(index_a < length) {
             dest[index_r++] = source[index_a++];
         }
         return index_r;
     }
 
-    protected static void mergeLists(int[] array, int start_a, int length_a, int length_b, int[] scratch) {
+    protected static void mergeLists(int[] array, int start_a, int length_a,
+            int length_b, int[] scratch) {
         int start_b = start_a + length_a;
         int end_b = start_b + length_b;
         copyArrayRegion(array, scratch, start_a, end_b, start_a);
@@ -55,7 +60,8 @@ public class MergeSortJava {
         return my_array;
     }
 
-    public static void mergeSort(int[] array, int start, int length, int[] scratch) {
+    public static void mergeSort(int[] array, int start, int length,
+            int[] scratch) {
         if(length < 2) {
             return;
         }

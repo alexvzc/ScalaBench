@@ -21,16 +21,19 @@ trait MergeSortBase {
     }
 
     def mergeSort(array : Array[Int]) : Array[Int] = {
-        mergeSort(array, new Array[Int](array.length), new Array[Int](array.length))
+        mergeSort(array, new Array[Int](array.length),
+                new Array[Int](array.length))
     }
 
-    def mergeSort(array : Array[Int], my_array : Array[Int], scratch : Array[Int]) : Array[Int] = {
+    def mergeSort(array : Array[Int], my_array : Array[Int],
+            scratch : Array[Int]) : Array[Int] = {
         copyArrayRegion(array, my_array, 0, array.length, 0)
         mergeSort(my_array, 0, my_array.length, scratch)
         my_array
     }
 
-    def mergeSort(array : Array[Int], start : Int, length : Int, scratch : Array[Int]) : Unit
+    def mergeSort(array : Array[Int], start : Int, length : Int,
+            scratch : Array[Int]) : Unit
 
     def mergeLists(array : Array[Int], start_a : Int, length_a : Int,
                    length_b : Int, scratch : Array[Int]) : Unit = {
@@ -55,7 +58,8 @@ trait MergeSortBase {
             my_index_r += 1
         }
 
-        my_index_r = copyArrayRegion(scratch, array, my_index_a, start_b, my_index_r)
+        my_index_r = copyArrayRegion(scratch, array, my_index_a, start_b,
+                my_index_r)
         copyArrayRegion(scratch, array, my_index_b, end_b, my_index_r)
     }
 
